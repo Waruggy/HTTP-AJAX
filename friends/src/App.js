@@ -1,26 +1,58 @@
-import React from 'react';
+import React, { Component } from 'react';
 import logo from './logo.svg';
+import axios from 'axios'
 import './App.css';
+import Friends from './components/Friends';
+import { Route } from 'react-router-dom'
+import NewFriend from './components/NewFriend';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+ class App extends Component {
+  constructor(){
+    super();
+    this.state = {
+        friends: [],
+        ids: []
+
+     }
 }
 
-export default App;
+
+ deleteFriend = (id) => {
+  return () => {
+  axios
+  .delete(`http://localhost:5000/friends/${id}`)
+  .then(response =>{
+      this.setState({
+          friends: response.data
+      })
+  })
+  .catch(error => {console.log('Server Error', error)})
+
+ }
+};
+
+ componentDidMount(){
+    axios
+        .get('http://localhost:5000/friends')
+        .then(response => {
+            this.setState(() =>({friends: response.data}))
+            console.log(response.data)
+        })
+        .catch(error => {
+            console.error('Server Error', error)
+        })
+
+ };
+
+
+   render() {
+    return (
+      <div className="App">
+      <Route path='/' render={(props) => <Friends deleter={this.deleteFriend} match={props.match} {...this.props} friends={this.state.friends} />} />
+      <Route path='/:id' render={(props) => <NewFriend deleter={this.deleteFriend} match={props.match} {...this.props} friends={this.state.friends} />} />
+      </div>
+    );
+  }
+}
+
+ export default App;
